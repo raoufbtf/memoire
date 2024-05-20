@@ -1,19 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { StyleSheet, View, ImageBackground, Text,TouchableOpacity } from 'react-native';
 import Textinput from '../../Components/textinput';
 import { Picker } from "@react-native-picker/picker";
 import Swiper from 'react-native-swiper';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
 
 function Envoi() {
     const [selectedOption, setSelectedOption] = useState(" ");
+    const [region, setRegion] = useState(null);
+    useEffect(() => {
+        (async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission to access location was denied');
+                return;
+            }
 
+            let location = await Location.getCurrentPositionAsync({});
+            setRegion({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.015,
+                longitudeDelta: 0.0121,
+            });
+        })();
+    }, []);
     return (
         <View style={styles.container}>
-            <View style={styles.map}>
-                <ImageBackground
-                    source={require('../assets/map.png')}
-                    style={styles.backgroundImage}
-                > 
+             <View style={styles.mapContainer}>
+                {region && (
+                    <MapView
+                        provider={PROVIDER_GOOGLE}
+                        style={styles.map}
+                        region={region}
+                    />
+                )}
                     <View style={styles.form}>
                         <Swiper>
                             <View style={styles.slide}>
@@ -41,13 +63,21 @@ function Envoi() {
                             </View>
                         </Swiper>
                     </View>
-                </ImageBackground>
+                
             </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    mapContainer: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    map: {
+        ...StyleSheet.absoluteFillObject,
+    },
     picker: {
         justifyContent: "center",
         alignSelf: "center",
