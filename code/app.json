@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "code",
+    "slug": "code",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./App/Screens/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./App/Screens/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./App/Screens/assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./App/Screens/assets/favicon.png"
+    }
+  }
+}
