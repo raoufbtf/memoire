@@ -1,14 +1,32 @@
-import React, { useState,useEffect } from 'react';
-import { StyleSheet, View, ImageBackground, Text,TouchableOpacity } from 'react-native';
-import Textinput from '../../Components/textinput';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Picker } from "@react-native-picker/picker";
 import Swiper from 'react-native-swiper';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 function Envoi() {
     const [selectedOption, setSelectedOption] = useState(" ");
     const [region, setRegion] = useState(null);
+    const [typeqry, setTypeqry] = useState(null);
+    const [emitterPosition, setEmitterPosition] = useState(null);
+    const [receiverPosition, setReceiverPosition] = useState(null);
+    const [polylineCoordinates, setPolylineCoordinates] = useState([]);
+
+    const navigation = useNavigation();
+    const route = useRoute();
+
+    const Emetteur = () => {
+        setTypeqry(true);
+        navigation.navigate('Enregistre', { data: true });
+    };
+
+    const Distinateur = () => {
+        setTypeqry(false);
+        navigation.navigate('Enregistre', { data: false });
+    };
+
     useEffect(() => {
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
@@ -26,50 +44,99 @@ function Envoi() {
             });
         })();
     }, []);
+
+    useEffect(() => {
+        if (route && route.params) {
+            const { data, position } = route.params;
+            if (data) {
+                setEmitterPosition(position);
+            } else {
+                setReceiverPosition(position);
+            }
+        }
+    }, [route]);
+
+    useEffect(() => {
+        if (emitterPosition && receiverPosition) {
+            // Calculer le chemin entre les positions de l'émetteur et du destinataire
+            const routeCoordinates = [
+                { latitude: emitterPosition.latitude, longitude: emitterPosition.longitude },
+                { latitude: receiverPosition.latitude, longitude: receiverPosition.longitude }
+            ];
+            setPolylineCoordinates(routeCoordinates);
+        }
+    }, [emitterPosition, receiverPosition]);
+
     return (
         <View style={styles.container}>
-             <View style={styles.mapContainer}>
+            <View style={styles.mapContainer}>
                 {region && (
                     <MapView
                         provider={PROVIDER_GOOGLE}
                         style={styles.map}
                         region={region}
-                    />
+                    >
+                        {emitterPosition && (
+                            <Marker coordinate={emitterPosition} />
+                        )}
+                        {receiverPosition && (
+                            <Marker coordinate={receiverPosition} />
+                        )}
+                        {polylineCoordinates.length > 0 && (
+                            <Polyline
+                                coordinates={polylineCoordinates}
+                                strokeWidth={4}
+                                strokeColor="#FF0000"
+                            />
+                        )}
+                    </MapView>
                 )}
-                    <View style={styles.form}>
-                        <Swiper>
-                            <View style={styles.slide}>
-                                <Textinput label={"l'adresse de l'émetteur"} holder={"Emetteur"} />
-                                <Textinput label={"l'adresse du destinataire"} holder={"Destinataire"} />
-                            </View>
-                            <View style={styles.slide}>
+                <View style={styles.form}>
+                    <Swiper>
+                        <View style={styles.slide}>
+                            <View style={{ width: '90%', marginTop: 15 }}>
+                                <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse de l'émetteur</Text>
+                                <TouchableOpacity style={styles.input} onPress={Emetteur}>{emitterPosition ? <Text>Position de l'émetteur enregistrée</Text> : <Text>Emetteur</Text>}</TouchableOpacity>
+                             </View>
+                            <View style={{ width: '90%', marginTop: 15 }}>
+                                <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse du destinataire</Text>
+                                <TouchableOpacity style={styles.input} onPress={Distinateur}>{receiverPosition ? <Text>Position du destinataire enregistrée</Text>:<Text>Destinataire</Text>}</TouchableOpacity>
                                 
+                            </View>
+                        </View>
+                        <View style={styles.slide}>
                             <Picker
-                                    selectedValue={selectedOption}
-                                style={[styles.picker, { borderRadius: 10 }]} // Ajoutez le borderRadius ici
-                             onValueChange={(itemValue) => setSelectedOption(itemValue)}>
-                             <Picker.Item label="Taille de colis" value="Taille de colis" />
-                             <Picker.Item label="petit" value="S" />
-                              <Picker.Item label="moyen" value="M" />
-                              <Picker.Item label="grand" value="L" />
+                                selectedValue={selectedOption}
+                                style={[styles.picker, { borderRadius: 10 }]}
+                                onValueChange={(itemValue) => setSelectedOption(itemValue)}>
+                                <Picker.Item label="Taille de colis" value="Taille de colis" />
+                                <Picker.Item label="petit" value="S" />
+                                <Picker.Item label="moyen" value="M" />
+                                <Picker.Item label="grand" value="L" />
                             </Picker>
-                            <TouchableOpacity  
-                            style={styles.button}> 
-                            <Text style={{fontWeight:"700",fontSize:25}}>Rechercher livreur </Text>
+                            <TouchableOpacity style={styles.button}>
+                                <Text style={{ fontWeight: "700", fontSize: 25 }}>Rechercher livreur</Text>
                             </TouchableOpacity>
-  
-
-                                
-                            </View>
-                        </Swiper>
-                    </View>
-                
+                        </View>
+                    </Swiper>
+                </View>
             </View>
         </View>
     );
 }
-
 const styles = StyleSheet.create({
+    input: {
+        justifyContent: "center",
+        alignSelf: "center",
+        width: '90%',
+        height: 40,
+        backgroundColor: 'rgba(255,255,255,0.5)',
+        borderColor: 'gray',
+        borderWidth: 1,
+        borderRadius: 5,
+        marginBottom: 25,
+        padding: 10,
+    },
     mapContainer: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'flex-end',
@@ -90,22 +157,13 @@ const styles = StyleSheet.create({
         marginTop: 10,
         padding: 10,
     },
-    slide: { flex: 1, marginLeft: 5, marginRight: 5, backgroundColor: 'rgba(239, 32, 77, 0.5)', borderRadius: 25, alignItems: "center" },
-    map: {
+    slide: {
         flex: 1,
-        justifyContent: "flex-end",
-        alignItems: "center",
-        backgroundColor: "transparent",
-        width: "100%",
-        height: "100%"
-    },
-    backgroundImage: {
-        flex: 1,
-        resizeMode: "cover",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        height: "100%"
+        marginLeft: 5,
+        marginRight: 5,
+        backgroundColor: 'rgba(239, 32, 77, 0.5)',
+        borderRadius: 25,
+        alignItems: "center"
     },
     form: {
         height: "40%",
@@ -128,16 +186,14 @@ const styles = StyleSheet.create({
         alignContent: "center"
     },
     button: {
-        borderRadius:25,
-        backgroundColor:"#B89F92",
-        height:50,
-        width:"70%",
+        borderRadius: 25,
+        backgroundColor: "#B89F92",
+        height: 50,
+        width: "70%",
         alignItems: 'center',
-        justifyContent:"center",
-        marginTop:20
-                   
-       },
-   
+        justifyContent: "center",
+        marginTop: 20
+    },
 });
 
 export default Envoi;
