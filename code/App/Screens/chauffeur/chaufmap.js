@@ -5,7 +5,7 @@ import ButtonM from '../../Components/button';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
-function Chaufmap() {
+function Chaufmap({navigation}) {
     const [isCheck, setIsCheck] = useState(false);
     const [region, setRegion] = useState(null);
 
@@ -30,6 +30,7 @@ function Chaufmap() {
             });
         })();
     }, []);
+    const ajouter_tarjet =()=>{navigation.navigate('Trajet')}
 
     return (
         <View style={styles.container}>
@@ -59,7 +60,7 @@ function Chaufmap() {
                             vous êtes disponibilité
                         </Text>
                     </TouchableOpacity>
-                    <ButtonM style={styles.button}>
+                    <ButtonM style={styles.button} fnc={ajouter_tarjet}>
                         Ajouter un trajet
                     </ButtonM>
                 </View>

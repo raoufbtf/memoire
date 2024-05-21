@@ -5,7 +5,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import ButtonM from '../../Components/button';
 function Listetrajet({navigation}) {
   
-    
+  const ajouter_tarjet =()=>{
+    navigation.navigate('Trajet');
+
+  }
 
   const data = [
       { id: '1', name: 'Item 2',Depart:"raouf",distination: "adem",dateheure:"en cours de livresant" },
@@ -88,7 +91,7 @@ function Listetrajet({navigation}) {
               </View>
           </View>
           <View style={styles.buttoncont}>
-            <ButtonM  style={styles.button}> Ajouter un trajet </ButtonM> 
+            <ButtonM  style={styles.button}fnc={ajouter_tarjet}> Ajouter un trajet </ButtonM> 
           </View>
           <View style={styles.liste}>
              <FlatList 

@@ -6,6 +6,8 @@ import Chaufmap from './chaufmap';
 import Listenvoi from './listecolis';
 
 import Listetrajet from './listetrajet';
+import Trajet from './trajet';
+import Enregistre from './enregistremap';
 
 function Page1({ navigation }) { 
   return (
@@ -73,6 +75,9 @@ function Home_chauf() {
       <Stack.Screen name='Chaufmap' component={Chaufmap} />
       <Stack.Screen name='Listenvoi' component={Listenvoi} />
       <Stack.Screen name='Listetrajet' component={Listetrajet} />
+      <Stack.Screen name='Trajet' component={Trajet} />
+      
+      <Stack.Screen name='Enregistre' component={Enregistre} />
 
     </Stack.Navigator>
   );

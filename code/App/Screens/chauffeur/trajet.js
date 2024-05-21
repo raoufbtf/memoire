@@ -1,7 +1,9 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
-import { Picker } from "@react-native-picker/picker";
 import Swiper from 'react-native-swiper';
+import DateTimePickerComponent from '../../Components/dateheur';
 import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -9,8 +11,8 @@ import { FIREBASE_DB } from '../../FireBaseConfig';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
 
-function Envoi() {
-    const [selectedOption, setSelectedOption] = useState(" ");
+function Trajet() {
+    const [selecteddate] = useState(" ");
     const [region, setRegion] = useState(null);
     const [emitterPosition, setEmitterPosition] = useState(null);
     const [receiverPosition, setReceiverPosition] = useState(null);
@@ -66,18 +68,17 @@ function Envoi() {
         }
     }, [emitterPosition, receiverPosition]);
 
-    const Recheche = async () => {
+    const ajouter = async () => {
         if (emitterPosition && receiverPosition) {
             try {
-                const locationRef = doc(FIREBASE_DB, 'locations', user.uid);
+                const locationRef = doc(FIREBASE_DB, 'trajet', user.uid);
                 const locationDoc = await getDoc(locationRef);
-                 const now = new Date(Date.now());// Les mois commencent à 0
                const locationData = {
-                    taille:selectedOption,
                     latitude_eme: emitterPosition.latitude,
                     longitude_eme: emitterPosition.longitude,
                     latitude_des: receiverPosition.latitude,
                     longitude_des: receiverPosition.longitude,
+                    date:selecteddate,
                     user_id: user.uid,
                    
                     timestamp_des: Date.now()
@@ -140,19 +141,17 @@ function Envoi() {
                             </View>
                         </View>
                         <View style={styles.slide}>
-                            <Picker
-                                selectedValue={selectedOption}
-                                style={[styles.picker, { borderRadius: 10 }]}
-                                onValueChange={(itemValue) => setSelectedOption(itemValue)}>
-                                <Picker.Item label="Taille de colis" value="Taille de colis" />
-                                <Picker.Item label="petit" value="S" />
-                                <Picker.Item label="moyen" value="M" />
-                                <Picker.Item label="grand" value="L" />
-                            </Picker>
-                            <TouchableOpacity style={styles.button} onPress={Recheche}>
-                                <Text style={{ fontWeight: "700", fontSize: 25 }}>Rechercher livreur</Text>
+                            <DateTimePickerComponent  onDateChange={selecteddate} />   
+                           
+                            <TouchableOpacity  
+                            style={styles.button} onPress={ajouter}> 
+                            <Text style={{fontWeight:"700",fontSize:25}}> Ajouter ce trajet  </Text>
                             </TouchableOpacity>
+  
+
+                                
                         </View>
+                        
                     </Swiper>
                 </View>
             </View>
@@ -232,4 +231,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Envoi;
+export default Trajet;

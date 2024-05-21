@@ -42,7 +42,7 @@ function Enregistre() {
     const handleEnregistrer = async () => {
         if (markerPosition) {
            
-                navigation.navigate('envoi', { data: data, position: markerPosition });
+                navigation.navigate('Trajet', { data: data, position: markerPosition });
            
         } else {
             Alert.alert('Veuillez sélectionner une localisation sur la carte.');
