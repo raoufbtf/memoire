@@ -71,7 +71,6 @@ function Envoi() {
             try {
                 const locationRef = doc(FIREBASE_DB, 'locations', user.uid);
                 const locationDoc = await getDoc(locationRef);
-                 const now = new Date(Date.now());// Les mois commencent à 0
                const locationData = {
                     taille:selectedOption,
                     latitude_eme: emitterPosition.latitude,

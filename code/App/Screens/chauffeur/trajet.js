@@ -1,9 +1,7 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
 import Swiper from 'react-native-swiper';
-import DateTimePickerComponent from '../../Components/dateheur';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -11,8 +9,46 @@ import { FIREBASE_DB } from '../../FireBaseConfig';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
 
+// DateTimePickerComponent should be defined outside Trajet
+const DateTimePickerComponent = ({ onDateChange }) => {
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+
+    const showDatePicker = () => {
+        setDatePickerVisibility(true);
+    };
+
+    const hideDatePicker = () => {
+        setDatePickerVisibility(false);
+    };
+
+    const handleConfirm = (date) => {
+        setSelectedDate(date);
+        onDateChange(date);
+        hideDatePicker();
+    };
+
+    return (
+        <View>
+            <TouchableOpacity style={styles.input} onPress={showDatePicker}>
+                {!selectedDate && (<Text>Entrer la date de départ</Text>)}
+                {selectedDate && (
+                    <Text>Date sélectionnée : {selectedDate.toString()}</Text>
+                )}
+            </TouchableOpacity>
+            <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="datetime"
+                onConfirm={handleConfirm}
+                onCancel={hideDatePicker}
+                locale="fr"
+            />
+        </View>
+    );
+};
+
 function Trajet() {
-    const [selecteddate] = useState(" ");
+    const [selectedDate, setSelectedDate] = useState(null);
     const [region, setRegion] = useState(null);
     const [emitterPosition, setEmitterPosition] = useState(null);
     const [receiverPosition, setReceiverPosition] = useState(null);
@@ -73,14 +109,13 @@ function Trajet() {
             try {
                 const locationRef = doc(FIREBASE_DB, 'trajet', user.uid);
                 const locationDoc = await getDoc(locationRef);
-               const locationData = {
+                const locationData = {
                     latitude_eme: emitterPosition.latitude,
                     longitude_eme: emitterPosition.longitude,
                     latitude_des: receiverPosition.latitude,
                     longitude_des: receiverPosition.longitude,
-                    date:selecteddate,
+                    date: selectedDate,
                     user_id: user.uid,
-                   
                     timestamp_des: Date.now()
                 };
 
@@ -141,17 +176,11 @@ function Trajet() {
                             </View>
                         </View>
                         <View style={styles.slide}>
-                            <DateTimePickerComponent  onDateChange={selecteddate} />   
-                           
-                            <TouchableOpacity  
-                            style={styles.button} onPress={ajouter}> 
-                            <Text style={{fontWeight:"700",fontSize:25}}> Ajouter ce trajet  </Text>
+                            <DateTimePickerComponent onDateChange={setSelectedDate} />
+                            <TouchableOpacity style={styles.button} onPress={ajouter}>
+                                <Text style={{ fontWeight: "700", fontSize: 25 }}>Ajouter ce trajet</Text>
                             </TouchableOpacity>
-  
-
-                                
                         </View>
-                        
                     </Swiper>
                 </View>
             </View>
