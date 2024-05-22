@@ -8,7 +8,7 @@ import axios from 'axios';
 
 
 function Enregistre() {
-const GOOGLE_PLACES_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';
+const GOOGLE_PLACES_API_KEY = 'apikey';
     const [region, setRegion] = useState(null);
     const [markerPosition, setMarkerPosition] = useState(null);
     const [search, setSearch] = useState("");
