@@ -30,7 +30,7 @@ const DateTimePickerComponent = ({ onDateChange }) => {
 
     return (
         <View>
-            <TouchableOpacity style={styles.input} onPress={showDatePicker}>
+            <TouchableOpacity style={[styles.input,{marginTop:25}]} onPress={showDatePicker}>
                 {!selectedDate && (<Text>Entrer la date de départ</Text>)}
                 {selectedDate && (
                     <Text>Date sélectionnée : {selectedDate.toString()}</Text>
@@ -163,15 +163,15 @@ function Trajet() {
                     <Swiper>
                         <View style={styles.slide}>
                             <View style={{ width: '90%', marginTop: 15 }}>
-                                <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse de l'émetteur</Text>
+                                <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse de depart</Text>
                                 <TouchableOpacity style={styles.input} onPress={Emetteur}>
-                                    {emitterPosition ? <Text>Position de l'émetteur enregistrée</Text> : <Text>Emetteur</Text>}
+                                    {emitterPosition ? <Text>Position de l'émetteur enregistrée</Text> : <Text>Depart</Text>}
                                 </TouchableOpacity>
                             </View>
                             <View style={{ width: '90%', marginTop: 15 }}>
-                                <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse du destinataire</Text>
+                                <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse d'arrive</Text>
                                 <TouchableOpacity style={styles.input} onPress={Distinateur}>
-                                    {receiverPosition ? <Text>Position du destinataire enregistrée</Text> : <Text>Destinataire</Text>}
+                                    {receiverPosition ? <Text>Position du destinataire enregistrée</Text> : <Text>Arrive</Text>}
                                 </TouchableOpacity>
                             </View>
                         </View>
