@@ -8,6 +8,8 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { FIREBASE_DB } from '../../FireBaseConfig';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
+import calculateDistance from '../../calculedis';
+import axios from 'axios';
 
 import getCurrentAddress from '../../adresstext';
 
@@ -88,46 +90,67 @@ function Trajet() {
 
     useEffect(() => {
         if (route && route.params) {
-          const { data, position } = route.params;
-          if (data) {
-            setEmitterPosition(position);
-            
-            handleGetAddressemitter(position);
-            
-          } else {
-            setReceiverPosition(position);
-            handleGetAddressreceiver(position);
-          }
-          
+            const { data, position } = route.params;
+            if (data) {
+                setEmitterPosition(position);
+                handleGetAddressemitter(position);
+            } else {
+                setReceiverPosition(position);
+                handleGetAddressreceiver(position);
+            }
         }
-      }, [route]);
-    
-      const handleGetAddressreceiver = async (position) => {
+    }, [route]);
+
+    const handleGetAddressreceiver = async (position) => {
         try {
-          const currentAddress = await getCurrentAddress(position.latitude, position.longitude);
-          setAddressreceiver(currentAddress);
+            const currentAddress = await getCurrentAddress(position.latitude, position.longitude);
+            setAddressreceiver(currentAddress);
         } catch (error) {
-          setAddressreceiver(error);
+            setAddressreceiver(error);
         }
-      };
-      const handleGetAddressemitter = async (position) => {
+    };
+
+    const handleGetAddressemitter = async (position) => {
         try {
-          const currentAddress = await getCurrentAddress(position.latitude, position.longitude);
-          setAddressemitter(currentAddress);
+            const currentAddress = await getCurrentAddress(position.latitude, position.longitude);
+            setAddressemitter(currentAddress);
         } catch (error) {
-          setAddressemitter(error);
+            setAddressemitter(error);
         }
-      };
+    };
 
     useEffect(() => {
         if (emitterPosition && receiverPosition) {
-            const routeCoordinates = [
-                { latitude: emitterPosition.latitude, longitude: emitterPosition.longitude },
-                { latitude: receiverPosition.latitude, longitude: receiverPosition.longitude }
-            ];
-            setPolylineCoordinates(routeCoordinates);
+            getDirections(emitterPosition, receiverPosition);
         }
     }, [emitterPosition, receiverPosition]);
+
+    const getDirections = async (startLoc, destinationLoc) => {
+        const apiKey = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ'; // Replace with your actual Google Maps API key
+        try {
+            const response = await axios.get(`https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc.latitude},${startLoc.longitude}&destination=${destinationLoc.latitude},${destinationLoc.longitude}&key=${apiKey}`);
+            const points = decodePolyline(response.data.routes[0].overview_polyline.points);
+            setPolylineCoordinates(points);
+        } catch (error) {
+            console.error('Error fetching directions:', error);
+        }
+    };
+
+    const decodePolyline = (t, e) => {
+        for (var n, o, u = 0, l = 0, r = 0, d = [], h = 0, i = 0, a = null, c = Math.pow(10, e || 5); u < t.length;) {
+            a = null, h = 0, i = 0;
+            do a = t.charCodeAt(u++) - 63, i |= (31 & a) << h, h += 5; while (a >= 32);
+            n = 1 & i ? ~(i >> 1) : i >> 1, h = i = 0;
+            do a = t.charCodeAt(u++) - 63, i |= (31 & a) << h, h += 5; while (a >= 32);
+            o = 1 & i ? ~(i >> 1) : i >> 1, l += n, r += o, d.push([l / c, r / c]);
+        }
+        return d.map(point => {
+            return {
+                latitude: point[0],
+                longitude: point[1]
+            }
+        });
+    };
 
     const ajouter = async () => {
         if (emitterPosition && receiverPosition) {
@@ -159,7 +182,23 @@ function Trajet() {
             Alert.alert('Veuillez sélectionner une localisation sur la carte.');
         }
     };
-
+    useEffect(() => {
+        const fetchDistance = async () => {
+            if (emitterPosition && receiverPosition) {
+                try {
+                    const distance = await calculateDistance(
+                        `${emitterPosition.latitude},${emitterPosition.longitude}`,
+                        `${receiverPosition.latitude},${receiverPosition.longitude}`
+                    );
+                    console.log('Distance:', distance);
+                } catch (error) {
+                    console.error('Erreur lors du calcul de la distance:', error);
+                }
+            }
+        };
+    
+        fetchDistance();
+    }, [emitterPosition, receiverPosition]);
     return (
         <View style={styles.container}>
             <View style={styles.mapContainer}>

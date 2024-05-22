@@ -11,16 +11,19 @@ import { useUser } from '../../UserContext';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import getCurrentAddress from '../../adresstext';
+import axios from 'axios';  // Import Axios
+
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';  // Replace with your API key
 
 function Envoi() {
   const [selectedOption, setSelectedOption] = useState(" ");
   const [region, setRegion] = useState(null);
   const [emitterPosition, setEmitterPosition] = useState(null);
   const [receiverPosition, setReceiverPosition] = useState(null);
-   const [addressreceiver, setAddressreceiver] = useState('');
+  const [addressreceiver, setAddressreceiver] = useState('');
   const [addressemitter, setAddressemitter] = useState('');
   const [polylineCoordinates, setPolylineCoordinates] = useState([]);
- 
+
   const navigation = useNavigation();
   const route = useRoute();
   const { user } = useUser();
@@ -56,14 +59,11 @@ function Envoi() {
       const { data, position } = route.params;
       if (data) {
         setEmitterPosition(position);
-        
         handleGetAddressemitter(position);
-        
       } else {
         setReceiverPosition(position);
         handleGetAddressreceiver(position);
       }
-      
     }
   }, [route]);
 
@@ -75,6 +75,7 @@ function Envoi() {
       setAddressreceiver(error);
     }
   };
+
   const handleGetAddressemitter = async (position) => {
     try {
       const currentAddress = await getCurrentAddress(position.latitude, position.longitude);
@@ -86,13 +87,48 @@ function Envoi() {
 
   useEffect(() => {
     if (emitterPosition && receiverPosition) {
-      const routeCoordinates = [
-        { latitude: emitterPosition.latitude, longitude: emitterPosition.longitude },
-        { latitude: receiverPosition.latitude, longitude: receiverPosition.longitude }
-      ];
-      setPolylineCoordinates(routeCoordinates);
+      fetchDirections(emitterPosition, receiverPosition);
     }
   }, [emitterPosition, receiverPosition]);
+
+  const fetchDirections = async (start, end) => {
+    const mode = 'driving';  // You can change this to 'walking', 'bicycling', or 'transit'
+    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&mode=${mode}&key=${GOOGLE_MAPS_API_KEY}`;
+    
+    try {
+      const response = await axios.get(url);
+      const points = response.data.routes[0].overview_polyline.points;
+      const decodedPoints = decodePolyline(points);
+      setPolylineCoordinates(decodedPoints);
+    } catch (error) {
+      console.error("Error fetching directions: ", error);
+    }
+  };
+
+  const decodePolyline = (t, e = 5) => {
+    let points = [];
+    for (let step = 0, lat = 0, lng = 0; step < t.length;) {
+      let byte, result = 0, shift = 0;
+      do {
+        byte = t.charCodeAt(step++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+      lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+
+      shift = 0;
+      result = 0;
+      do {
+        byte = t.charCodeAt(step++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+      lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+
+      points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
+    }
+    return points;
+  };
 
   const Recheche = async () => {
     if (emitterPosition && receiverPosition) {
