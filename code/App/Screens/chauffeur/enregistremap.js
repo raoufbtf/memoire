@@ -6,7 +6,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useUser } from '../../UserContext';
 import axios from 'axios'; 
 
-const GOOGLE_PLACES_API_KEY = 'apikey';
+const GOOGLE_PLACES_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';
 
 function Enregistre() {
     const [region, setRegion] = useState(null);

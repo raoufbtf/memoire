@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const GOOGLE_MAPS_API_KEY = 'apikey';
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';
 
 
 const getCurrentAddress = async (latitude, longitude) => {
