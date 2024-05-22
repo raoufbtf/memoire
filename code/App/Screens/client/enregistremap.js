@@ -6,9 +6,9 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useUser } from '../../UserContext';
 import axios from 'axios'; 
 
-const GOOGLE_PLACES_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';
 
 function Enregistre() {
+const GOOGLE_PLACES_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';
     const [region, setRegion] = useState(null);
     const [markerPosition, setMarkerPosition] = useState(null);
     const [search, setSearch] = useState("");
@@ -43,7 +43,7 @@ function Enregistre() {
 
     const handleEnregistrer = () => {
         if (markerPosition) {
-            navigation.navigate('Trajet', { data: data, position: markerPosition });
+            navigation.navigate('envoi', { data: data, position: markerPosition });
         } else {
             Alert.alert('Veuillez sélectionner une localisation sur la carte.');
         }

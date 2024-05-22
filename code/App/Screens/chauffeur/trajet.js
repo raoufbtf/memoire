@@ -9,7 +9,8 @@ import { FIREBASE_DB } from '../../FireBaseConfig';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
 
-// DateTimePickerComponent should be defined outside Trajet
+import getCurrentAddress from '../../adresstext';
+
 const DateTimePickerComponent = ({ onDateChange }) => {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
@@ -52,6 +53,8 @@ function Trajet() {
     const [region, setRegion] = useState(null);
     const [emitterPosition, setEmitterPosition] = useState(null);
     const [receiverPosition, setReceiverPosition] = useState(null);
+    const [addressreceiver, setAddressreceiver] = useState('');
+    const [addressemitter, setAddressemitter] = useState('');
     const [polylineCoordinates, setPolylineCoordinates] = useState([]);
     const navigation = useNavigation();
     const route = useRoute();
@@ -85,14 +88,36 @@ function Trajet() {
 
     useEffect(() => {
         if (route && route.params) {
-            const { data, position } = route.params;
-            if (data) {
-                setEmitterPosition(position);
-            } else {
-                setReceiverPosition(position);
-            }
+          const { data, position } = route.params;
+          if (data) {
+            setEmitterPosition(position);
+            
+            handleGetAddressemitter(position);
+            
+          } else {
+            setReceiverPosition(position);
+            handleGetAddressreceiver(position);
+          }
+          
         }
-    }, [route]);
+      }, [route]);
+    
+      const handleGetAddressreceiver = async (position) => {
+        try {
+          const currentAddress = await getCurrentAddress(position.latitude, position.longitude);
+          setAddressreceiver(currentAddress);
+        } catch (error) {
+          setAddressreceiver(error);
+        }
+      };
+      const handleGetAddressemitter = async (position) => {
+        try {
+          const currentAddress = await getCurrentAddress(position.latitude, position.longitude);
+          setAddressemitter(currentAddress);
+        } catch (error) {
+          setAddressemitter(error);
+        }
+      };
 
     useEffect(() => {
         if (emitterPosition && receiverPosition) {
@@ -165,13 +190,13 @@ function Trajet() {
                             <View style={{ width: '90%', marginTop: 15 }}>
                                 <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse de depart</Text>
                                 <TouchableOpacity style={styles.input} onPress={Emetteur}>
-                                    {emitterPosition ? <Text>Position de l'émetteur enregistrée</Text> : <Text>Depart</Text>}
+                                    {emitterPosition ? <Text>{addressemitter}</Text> : <Text>Depart</Text>}
                                 </TouchableOpacity>
                             </View>
                             <View style={{ width: '90%', marginTop: 15 }}>
                                 <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>L'adresse d'arrive</Text>
                                 <TouchableOpacity style={styles.input} onPress={Distinateur}>
-                                    {receiverPosition ? <Text>Position du destinataire enregistrée</Text> : <Text>Arrive</Text>}
+                                    {receiverPosition ? <Text>{addressreceiver}</Text> : <Text>Arrive</Text>}
                                 </TouchableOpacity>
                             </View>
                         </View>
