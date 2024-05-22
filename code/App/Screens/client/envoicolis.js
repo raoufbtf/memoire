@@ -8,6 +8,8 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { FIREBASE_DB } from '../../FireBaseConfig';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
+import 'react-native-get-random-values'; // Import the polyfill
+import { v4 as uuidv4 } from 'uuid'; // Import the UUID library
 
 function Envoi() {
     const [selectedOption, setSelectedOption] = useState(" ");
@@ -69,24 +71,19 @@ function Envoi() {
     const Recheche = async () => {
         if (emitterPosition && receiverPosition) {
             try {
-                const locationRef = doc(FIREBASE_DB, 'locations', user.uid);
-                const locationDoc = await getDoc(locationRef);
-               const locationData = {
-                    taille:selectedOption,
+                const locationId = uuidv4(); // Generate a random UUID
+                const locationRef = doc(FIREBASE_DB, 'locations', locationId);
+                const locationData = {
+                    taille: selectedOption,
                     latitude_eme: emitterPosition.latitude,
                     longitude_eme: emitterPosition.longitude,
                     latitude_des: receiverPosition.latitude,
                     longitude_des: receiverPosition.longitude,
                     user_id: user.uid,
-                   
                     timestamp_des: Date.now()
                 };
 
-                if (locationDoc.exists()) {
-                    await updateDoc(locationRef, locationData);
-                } else {
-                    await setDoc(locationRef, locationData);
-                }
+                await setDoc(locationRef, locationData);
 
                 Alert.alert('Localisation enregistrée avec succès !');
             } catch (e) {
