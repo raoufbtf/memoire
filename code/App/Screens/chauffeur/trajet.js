@@ -10,6 +10,8 @@ import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
 import calculateDistance from '../../calculedis';
 import axios from 'axios';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 import getCurrentAddress from '../../adresstext';
 
@@ -128,7 +130,7 @@ function Trajet() {
     const getDirections = async (startLoc, destinationLoc) => {
         const apiKey = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ'; // Replace with your actual Google Maps API key
         try {
-            const response = await axios.get(`https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc.latitude},${startLoc.longitude}&destination=${destinationLoc.latitude},${destinationLoc.longitude}&key=${apiKey}`);
+            const response = await axios.get(`https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc.latitude},${startLoc.longitude}&destination=${destinationLoc.latitude}&key=${apiKey}`);
             const points = decodePolyline(response.data.routes[0].overview_polyline.points);
             setPolylineCoordinates(points);
         } catch (error) {
@@ -155,8 +157,8 @@ function Trajet() {
     const ajouter = async () => {
         if (emitterPosition && receiverPosition) {
             try {
-                const locationRef = doc(FIREBASE_DB, 'trajet', user.uid);
-                const locationDoc = await getDoc(locationRef);
+                const locationId = uuidv4(); // Generate unique ID
+                const locationRef = doc(FIREBASE_DB, 'trajet', locationId); // Use the unique ID as document ID
                 const locationData = {
                     latitude_eme: emitterPosition.latitude,
                     longitude_eme: emitterPosition.longitude,
@@ -167,11 +169,7 @@ function Trajet() {
                     timestamp_des: Date.now()
                 };
 
-                if (locationDoc.exists()) {
-                    await updateDoc(locationRef, locationData);
-                } else {
-                    await setDoc(locationRef, locationData);
-                }
+                await setDoc(locationRef, locationData);
 
                 Alert.alert('Localisation enregistrée avec succès !');
             } catch (e) {
@@ -182,6 +180,7 @@ function Trajet() {
             Alert.alert('Veuillez sélectionner une localisation sur la carte.');
         }
     };
+
     useEffect(() => {
         const fetchDistance = async () => {
             if (emitterPosition && receiverPosition) {
@@ -199,6 +198,7 @@ function Trajet() {
     
         fetchDistance();
     }, [emitterPosition, receiverPosition]);
+
     return (
         <View style={styles.container}>
             <View style={styles.mapContainer}>
