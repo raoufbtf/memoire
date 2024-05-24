@@ -6,7 +6,7 @@ import Envoi from './envoicolis';
 import Listenvoi from './listenvoi';
 import Devenirchauf from './devenirchauf';
 import Recevoire from './recevoirecolis';
-import Enregistre from './enregistremap'
+import Enregistre from './enregistremap';
 
 function Page1({ navigation }) { 
   return (
