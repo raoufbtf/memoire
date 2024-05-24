@@ -49,9 +49,28 @@ function Listenvoi({ navigation }) {
                         ...locationData,
                     });
                 });
+                const locationsRefa = collection(FIREBASE_DB, 'acceptedLocations');
+                const d = query(locationsRefa, where('user_id', '==', user.uid));
+                const querySnapshots = await getDocs(d);
+
+                querySnapshots.forEach((doc) => {
+                    const locationData = doc.data();
+
+                    addToCells({
+                        emeteur: userData.name,
+                        distinateur: userData.familyName,
+                        etat: 'En Cours', 
+                        taille: locationData.taille,
+                        num: userData.num,
+                        ...locationData,
+                    });
+                });
+                
             } catch (e) {
                 console.error("Error fetching documents: ", e);
             }
+
+            
         };
 
         fetchData();

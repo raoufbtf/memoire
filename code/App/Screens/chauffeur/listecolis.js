@@ -4,7 +4,7 @@ import { AntDesign } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '../../UserContext';
 import { FIREBASE_DB } from '../../FireBaseConfig';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore'; // Added addDoc
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function Listenvoi({ navigation }) {
@@ -46,7 +46,7 @@ function Listenvoi({ navigation }) {
             const q = query(trajetsRef, where('user_id', '==', user.uid)); // Filter by user_id
             const querySnapshot = await getDocs(q);
             const trajetsList = [];
-    
+
             querySnapshot.forEach((doc) => {
                 const trajetData = doc.data();
                 trajetsList.push({
@@ -54,14 +54,13 @@ function Listenvoi({ navigation }) {
                     ...trajetData,
                 });
             });
-    
+
             console.log('Fetched trajets:', trajetsList); // Debug statement
             return trajetsList;
         } catch (error) {
             console.error('Error fetching trajets:', error);
         }
     };
-    
 
     const fetchLocationsForTrajet = async (trajet) => {
         try {
@@ -131,7 +130,27 @@ function Listenvoi({ navigation }) {
             });
         }, 15 * 60 * 1000); // 15 minutes
     };
-    
+
+    const handleAcceptLocation = async (location) => {
+        try {
+            const acceptedLocationsRef = collection(FIREBASE_DB, 'acceptedLocations');
+            await addDoc(acceptedLocationsRef, {
+                chauffeur_id: user.uid,
+                ...location,
+            });
+            console.log('Location accepted:', location);
+
+            // Now delete from locations collection
+            const locationDoc = doc(FIREBASE_DB, 'locations', location.id);
+            await deleteDoc(locationDoc);
+            console.log('Location deleted:', location.id);
+
+            // Update state to reflect deletion
+            setLocations((prevLocations) => prevLocations.filter((loc) => loc.id !== location.id));
+        } catch (error) {
+            console.error('Error accepting location:', error);
+        }
+    };
 
     const reload = () => {
         rotateIcon();
@@ -167,7 +186,7 @@ function Listenvoi({ navigation }) {
                 <Text>ID: {item.id}</Text>
                 <Text>Latitude EME: {item.latitude_eme}</Text>
                 <Text>Longitude EME: {item.longitude_eme}</Text>
-                <Button title="Accept" />
+                <Button title="Accept" onPress={() => handleAcceptLocation(item)} />
                 <Button title="Refuse" onPress={() => handleRefuseLocation(item.id)} />
                 {/* Display other location details here */}
             </View>
