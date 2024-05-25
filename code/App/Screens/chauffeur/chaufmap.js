@@ -6,11 +6,11 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 function Chaufmap({navigation}) {
-    const [isCheck, setIsCheck] = useState(false);
     const [region, setRegion] = useState(null);
 
-    const toggleCheckBox = () => {
-        setIsCheck(!isCheck);
+    const colisenvoi = () => {
+        navigation.navigate('Listenvoi')
+       
     };
 
     useEffect(() => {
@@ -43,19 +43,10 @@ function Chaufmap({navigation}) {
                     />
                 )}
                 <View style={styles.form}>
-                    <TouchableOpacity onPress={toggleCheckBox} style={styles.checkBox}>
-                        <Ionicons
-                            name={isCheck ? 'checkbox-outline' : 'square-outline'}
-                            size={50}
-                            color='black'
-                            style={[
-                                styles.icon,
-                                { backgroundColor: isCheck ? "rgba(239, 32, 77, 1)" : "rgba(255, 255, 255, 1)" }
-                            ]}
-                        />
+                    <TouchableOpacity onPress={colisenvoi} style={styles.button1}>
+                       
                         <Text style={[
                             styles.text,
-                            { textDecorationLine: isCheck ? "none" : "line-through" }
                         ]}>
                             vous êtes disponibilité
                         </Text>
@@ -99,11 +90,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    checkBox: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-    },
+  
     icon: {
         borderRadius: 5,
         height: 50,
@@ -117,6 +104,15 @@ const styles = StyleSheet.create({
     button: {
         marginTop: 10,
         borderRadius: 15,
+    },
+    button1: {
+        borderRadius: 25,
+        backgroundColor: "#B89F92",
+        height: 50,
+        width: "95%",
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: "center",
     },
 });
 

@@ -11,8 +11,8 @@ import { useUser } from '../../UserContext';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import getCurrentAddress from '../../adresstext';
-import axios from 'axios';  // Import Axios
 
+import MapViewDirections from 'react-native-maps-directions';
 const GOOGLE_MAPS_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';  // Replace with your API key
 
 function Envoi() {
@@ -85,50 +85,7 @@ function Envoi() {
     }
   };
 
-  useEffect(() => {
-    if (emitterPosition && receiverPosition) {
-      fetchDirections(emitterPosition, receiverPosition);
-    }
-  }, [emitterPosition, receiverPosition]);
-
-  const fetchDirections = async (start, end) => {
-    const mode = 'driving';  // You can change this to 'walking', 'bicycling', or 'transit'
-    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&mode=${mode}&key=${GOOGLE_MAPS_API_KEY}`;
-    
-    try {
-      const response = await axios.get(url);
-      const points = response.data.routes[0].overview_polyline.points;
-      const decodedPoints = decodePolyline(points);
-      setPolylineCoordinates(decodedPoints);
-    } catch (error) {
-      console.error("Error fetching directions: ", error);
-    }
-  };
-
-  const decodePolyline = (t, e = 5) => {
-    let points = [];
-    for (let step = 0, lat = 0, lng = 0; step < t.length;) {
-      let byte, result = 0, shift = 0;
-      do {
-        byte = t.charCodeAt(step++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-      lat += (result & 1) ? ~(result >> 1) : (result >> 1);
-
-      shift = 0;
-      result = 0;
-      do {
-        byte = t.charCodeAt(step++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-      lng += (result & 1) ? ~(result >> 1) : (result >> 1);
-
-      points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
-    }
-    return points;
-  };
+ 
 
   const Recheche = async () => {
     if (emitterPosition && receiverPosition) {
@@ -172,13 +129,15 @@ function Envoi() {
             {receiverPosition && (
               <Marker coordinate={receiverPosition} />
             )}
-            {polylineCoordinates.length > 0 && (
-              <Polyline
-                coordinates={polylineCoordinates}
-                strokeWidth={4}
-                strokeColor="#FF0000"
-              />
-            )}
+            {emitterPosition && receiverPosition && (
+                    <MapViewDirections
+                        origin={emitterPosition}
+                        destination={receiverPosition}
+                        apikey={GOOGLE_MAPS_API_KEY}
+                        strokeWidth={3}
+                        strokeColor="hotpink"
+                    />
+                       )}
           </MapView>
         )}
         <View style={styles.form}>

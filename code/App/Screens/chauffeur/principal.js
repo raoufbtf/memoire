@@ -8,6 +8,8 @@ import Listenvoi from './listecolis';
 import Listetrajet from './listetrajet';
 import Trajet from './trajet';
 import Enregistre from './enregistremap';
+import Map from './map';
+import Listeacc from './listecolisacc';
 
 function Page1({ navigation }) { 
   return (
@@ -23,8 +25,8 @@ function Page1({ navigation }) {
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Chaufmap')}> 
       <Text>La map </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Listenvoi')}> 
-      <Text>Inventaire  de colis</Text>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Listeacc')}> 
+      <Text>Inventaire  de colis  accepte</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Listetrajet')}> 
       <Text> Declarer les trajet  </Text>
@@ -76,8 +78,12 @@ function Home_chauf() {
       <Stack.Screen name='Listenvoi' component={Listenvoi} />
       <Stack.Screen name='Listetrajet' component={Listetrajet} />
       <Stack.Screen name='Trajet' component={Trajet} />
-      
       <Stack.Screen name='Enregistre' component={Enregistre} />
+      <Stack.Screen name='Map' component={Map} />
+      
+      <Stack.Screen name='Listeacc' component={Listeacc} />
+
+
 
     </Stack.Navigator>
   );

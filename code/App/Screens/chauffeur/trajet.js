@@ -8,12 +8,14 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { FIREBASE_DB } from '../../FireBaseConfig';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
-import calculateDistance from '../../calculedis';
-import axios from 'axios';
+
+import MapViewDirections from 'react-native-maps-directions';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 import getCurrentAddress from '../../adresstext';
+
+const GOOGLE_MAPS_APIKEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';
 
 const DateTimePickerComponent = ({ onDateChange }) => {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -121,38 +123,9 @@ function Trajet() {
         }
     };
 
-    useEffect(() => {
-        if (emitterPosition && receiverPosition) {
-            getDirections(emitterPosition, receiverPosition);
-        }
-    }, [emitterPosition, receiverPosition]);
 
-    const getDirections = async (startLoc, destinationLoc) => {
-        const apiKey = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ'; // Replace with your actual Google Maps API key
-        try {
-            const response = await axios.get(`https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc.latitude},${startLoc.longitude}&destination=${destinationLoc.latitude}&key=${apiKey}`);
-            const points = decodePolyline(response.data.routes[0].overview_polyline.points);
-            setPolylineCoordinates(points);
-        } catch (error) {
-            console.error('Error fetching directions:', error);
-        }
-    };
+   
 
-    const decodePolyline = (t, e) => {
-        for (var n, o, u = 0, l = 0, r = 0, d = [], h = 0, i = 0, a = null, c = Math.pow(10, e || 5); u < t.length;) {
-            a = null, h = 0, i = 0;
-            do a = t.charCodeAt(u++) - 63, i |= (31 & a) << h, h += 5; while (a >= 32);
-            n = 1 & i ? ~(i >> 1) : i >> 1, h = i = 0;
-            do a = t.charCodeAt(u++) - 63, i |= (31 & a) << h, h += 5; while (a >= 32);
-            o = 1 & i ? ~(i >> 1) : i >> 1, l += n, r += o, d.push([l / c, r / c]);
-        }
-        return d.map(point => {
-            return {
-                latitude: point[0],
-                longitude: point[1]
-            }
-        });
-    };
 
     const ajouter = async () => {
         if (emitterPosition && receiverPosition) {
@@ -181,23 +154,7 @@ function Trajet() {
         }
     };
 
-    useEffect(() => {
-        const fetchDistance = async () => {
-            if (emitterPosition && receiverPosition) {
-                try {
-                    const distance = await calculateDistance(
-                        `${emitterPosition.latitude},${emitterPosition.longitude}`,
-                        `${receiverPosition.latitude},${receiverPosition.longitude}`
-                    );
-                    console.log('Distance:', distance);
-                } catch (error) {
-                    console.error('Erreur lors du calcul de la distance:', error);
-                }
-            }
-        };
     
-        fetchDistance();
-    }, [emitterPosition, receiverPosition]);
 
     return (
         <View style={styles.container}>
@@ -214,13 +171,15 @@ function Trajet() {
                         {receiverPosition && (
                             <Marker coordinate={receiverPosition} />
                         )}
-                        {polylineCoordinates.length > 0 && (
-                            <Polyline
-                                coordinates={polylineCoordinates}
-                                strokeWidth={4}
-                                strokeColor="#FF0000"
-                            />
-                        )}
+                        {emitterPosition && receiverPosition && (
+                    <MapViewDirections
+                        origin={emitterPosition}
+                        destination={receiverPosition}
+                        apikey={GOOGLE_MAPS_APIKEY}
+                        strokeWidth={3}
+                        strokeColor="hotpink"
+                    />
+                       )}
                     </MapView>
                 )}
                 <View style={styles.form}>
