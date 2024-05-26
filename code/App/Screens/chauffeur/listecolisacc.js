@@ -117,6 +117,9 @@ function Listeacc({ navigation }) {
                 <View style={styles.cells}>
                     <Text style={{ fontWeight: "600" }}>Numero:</Text>
                     <Text>{item.num}</Text>
+                    <TouchableOpacity style={styles.button} on onPress={()=>{navigation.navigate("Terminer")}}>
+                        <Text style={styles.buttonText}>Terminer</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>

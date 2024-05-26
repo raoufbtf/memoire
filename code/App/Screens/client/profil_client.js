@@ -11,7 +11,6 @@ import { FIREBASE_AUTH } from '../../FireBaseConfig';
 
 function Profil_client({ navigation }) {
   const [avoirpic, setavoirpic] = useState(false);
-  const [premierlrt, setpremierlrt] = useState("R");
   const { user, setUser } = useUser();
   const [userData, setUserData] = useState(null);
 
@@ -47,11 +46,13 @@ function Profil_client({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={[ styles.backbutton,{position: "absolute",
-    left: 10}]} onPress={()=>navigation.navigate("home")}>
+        <TouchableOpacity style={ styles.backbutton} onPress={()=>navigation.navigate("home")}>
           <AntDesign name='back' size={40} color={"black"} />
         </TouchableOpacity>
        <Text  style={{fontSize:30,fontWeight:"600"}}>Profile</Text>
+       <TouchableOpacity style={[ styles.backbutton,{backgroundColor:'rgba(239, 32, 77, 1)',}]} onPress={handleLogout}>
+       <MaterialIcons name="logout" size={40} color="black" />
+        </TouchableOpacity>
       
       </View>
       <View style={styles.container2}>
@@ -63,14 +64,12 @@ function Profil_client({ navigation }) {
         <Text style={{marginTop:20,fontSize:30,fontWeight:"500"}}> {userData && userData.name ? userData.name : "Default Name"} {userData && userData.familyName ? userData.familyName : "Default family"}</Text>
         <Textedit label="l'adresse" button={true}> {userData && userData.email ? userData.email : "Default email"}</Textedit>
         <Textedit label="Numero de telephone" button={true}> {userData && userData.num ? userData.num : "Default num"}</Textedit>
+        <Textedit label="le idantifiant de reception" > raouf</Textedit>
         
       </View>
-      <View style={{flex:0.3,width:"90%",alignItems: "center"}}>
+      <View style={{flex:0.1,width:"90%",alignItems: "center"}}>
       <TouchableOpacity  style={styles.button} onPress={() => (navigation.navigate('Devenirchauf'))}> 
         <Text style={{fontWeight:"700",fontSize:25}}>Devenir un chaufeur </Text>
-     </TouchableOpacity>
-     <TouchableOpacity  style={[styles.button,{backgroundColor:'rgba(239, 32, 77, 1)'}]} onPress={handleLogout}> 
-        <Text style={{fontWeight:"700",fontSize:25}}>Se déconnecter</Text>
      </TouchableOpacity>
      </View>
     </View>
@@ -96,23 +95,24 @@ const styles = StyleSheet.create({
     flex: 0.1,
     marginTop: 10,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
     width: "90%",
   },
   container2:{
-    marginTop:20,
+   
     width:"90%",
     backgroundColor:"#fff",
     borderRadius:10,
     justifyContent: "flex-start",
     alignItems: "center",
     elevation:10,
-    flex:0.6
+    flex:0.8
 
   },
   button: {
-    marginTop:20,
+    position:"absolute",
+    bottom:"10",
     borderRadius:25,
     backgroundColor:"#B89F92",
     height:50,

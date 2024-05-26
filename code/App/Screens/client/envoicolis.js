@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert , TextInput} from 'react-native';
 import { Picker } from "@react-native-picker/picker";
 import Swiper from 'react-native-swiper';
-import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { FIREBASE_DB } from '../../FireBaseConfig';
@@ -22,7 +22,7 @@ function Envoi() {
   const [receiverPosition, setReceiverPosition] = useState(null);
   const [addressreceiver, setAddressreceiver] = useState('');
   const [addressemitter, setAddressemitter] = useState('');
-  const [polylineCoordinates, setPolylineCoordinates] = useState([]);
+  const [idu,setidu]= useState('');
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -157,6 +157,15 @@ function Envoi() {
               </View>
             </View>
             <View style={styles.slide}>
+              
+            <Text style={{ fontWeight: "500", fontSize: 17, marginLeft: 20 }}>le id de distinataire</Text>
+            <TextInput
+                  style={styles.input}
+                  onChangeText={setidu}
+                  value={idu}
+                  placeholder="Enter le identifiant"
+                />
+
               <Picker
                 selectedValue={selectedOption}
                 style={[styles.picker, { borderRadius: 10 }]}

@@ -10,6 +10,7 @@ import Trajet from './trajet';
 import Enregistre from './enregistremap';
 import Map from './map';
 import Listeacc from './listecolisacc';
+import Terminer from './terminer';
 
 function Page1({ navigation }) { 
   return (
@@ -82,6 +83,7 @@ function Home_chauf() {
       <Stack.Screen name='Map' component={Map} />
       
       <Stack.Screen name='Listeacc' component={Listeacc} />
+      <Stack.Screen name='Terminer' component={Terminer} />
 
 
 

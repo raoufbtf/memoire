@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList, ActivityI
 import { AntDesign } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FIREBASE_DB } from '../../FireBaseConfig';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc as firestoreDoc, getDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
 import ButtonM from '../../Components/button';
 import getCurrentAddress from '../../adresstext';
@@ -17,7 +17,7 @@ function Listenvoi({ navigation }) {
 
     const fetchCells = async () => {
         try {
-            const userRef = doc(FIREBASE_DB, 'users', user.uid);
+            const userRef = firestoreDoc(FIREBASE_DB, 'users', user.uid);
             const userDoc = await getDoc(userRef);
 
             if (!userDoc.exists()) {
@@ -30,12 +30,12 @@ function Listenvoi({ navigation }) {
             const q = query(cellsRef, where('user_id', '==', user.uid));
             const querySnapshot = await getDocs(q);
 
-            const cellsList = await Promise.all(querySnapshot.docs.map(async (doc) => {
-                const cellData = doc.data();
+            const pendingCells = await Promise.all(querySnapshot.docs.map(async (cellDoc) => {
+                const cellData = cellDoc.data();
                 const depart = await getCurrentAddress(cellData.latitude_eme, cellData.longitude_eme);
                 const destination = await getCurrentAddress(cellData.latitude_des, cellData.longitude_des);
                 return {
-                    id: doc.id,
+                    id: cellDoc.id,
                     depart,
                     destination,
                     taille: cellData.taille,
@@ -44,26 +44,28 @@ function Listenvoi({ navigation }) {
                 };
             }));
 
-            setCells(cellsList);
             const cellsRefa = collection(FIREBASE_DB, 'acceptedLocations');
             const d = query(cellsRefa, where('user_id', '==', user.uid));
             const querySnapshots = await getDocs(d);
 
-            const cellsLists = await Promise.all(querySnapshots.docs.map(async (doc) => {
-                const cellData = doc.data();
+            const acceptedCells = await Promise.all(querySnapshots.docs.map(async (cellDoc) => {
+                const cellData = cellDoc.data();
+                const chauffeurRef = firestoreDoc(FIREBASE_DB, 'users', cellData.chauffeur_id);
+                const chauffeurDoc = await getDoc(chauffeurRef);
+                const chauffeur = chauffeurDoc.data();
                 const depart = await getCurrentAddress(cellData.latitude_eme, cellData.longitude_eme);
                 const destination = await getCurrentAddress(cellData.latitude_des, cellData.longitude_des);
                 return {
-                    id: doc.id,
+                    id: cellDoc.id,
                     depart,
                     destination,
                     taille: cellData.taille,
-                    etat: 'En cours ',
-                    num: userData.num,
+                    etat: 'En Cours',
+                    num: chauffeur.num,
                 };
             }));
 
-            setCells(cellsLists);
+            setCells([...acceptedCells, ...pendingCells]);
         } catch (e) {
             console.error("Error fetching cells: ", e);
         } finally {
@@ -120,11 +122,8 @@ function Listenvoi({ navigation }) {
                 duration: 1000,
                 useNativeDriver: true,
             }).start(() => {
-                Animated.timing(rotationValue, {
-                    toValue: 0,
-                    duration: 0,
-                    useNativeDriver: true,
-                }).start(() => setRotating(false));
+                rotationValue.setValue(0); // Reset rotation to 0 after completing the animation
+                setRotating(false);
             });
         }
     };
@@ -160,7 +159,7 @@ function Listenvoi({ navigation }) {
                 <FlatList
                     data={cells}
                     renderItem={renderItem}
-                    keyExtractor={item => item.id.toString()}
+                    keyExtractor={item => item.id}
                 />
             </View>
         </View>
