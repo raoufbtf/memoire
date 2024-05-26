@@ -41,8 +41,10 @@ function Listenvoi({ navigation }) {
                     const locationData = doc.data();
 
                     addToCells({
-                        emeteur: userData.name,
-                        distinateur: userData.familyName,
+                        Lemeteur: locationData.latitude_eme,
+                        Ldistinateur: locationData.latitude_des,
+                        lemeteur: locationData.longitude_eme,
+                        ldistinateur: locationData.longitude_des,
                         etat: 'En Attente', 
                         taille: locationData.taille,
                         num: userData.num,
@@ -57,8 +59,10 @@ function Listenvoi({ navigation }) {
                     const locationData = doc.data();
 
                     addToCells({
-                        emeteur: userData.name,
-                        distinateur: userData.familyName,
+                        Lemeteur: locationData.latitude_eme,
+                        Ldistinateur: locationData.latitude_des,
+                        lemeteur: locationData.longitude_eme,
+                        ldistinateur: locationData.longitude_des,
                         etat: 'En Cours', 
                         taille: locationData.taille,
                         num: userData.num,
@@ -81,11 +85,11 @@ function Listenvoi({ navigation }) {
             <Text style={{fontWeight:"bold"}}>le coli : </Text>
             <View style={[styles.item2]}>
                 <View style={styles.cells}>
-                    <Text style={{fontWeight:"600"}}>Name:</Text>
-                    <Text>{item.emeteur}</Text>
+                    <Text style={{fontWeight:"600"}}>depart:</Text>
+                    <Text>{item.lemeteur}</Text>
                     <Text>{item.id}</Text>
-                    <Text style={{fontWeight:"bold"}}>FamilyName:</Text>
-                    <Text>{item.distinateur}</Text>
+                    <Text style={{fontWeight:"bold"}}>destination:</Text>
+                    <Text>{item.ldistinateur}</Text>
                 </View>
                 <View style={styles.cells}>
                     <Text style={{fontWeight:"bold"}}>Taille:</Text>
