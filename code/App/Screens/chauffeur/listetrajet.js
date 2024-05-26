@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList } from 'react-native';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FIREBASE_DB } from '../../FireBaseConfig';
@@ -13,6 +13,7 @@ function Listetrajet({ navigation }) {
   const { user } = useUser();
   const rotationValue = useRef(new Animated.Value(0)).current;
   const [rotating, setRotating] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const ajouter_tarjet = () => {
     navigation.navigate('Trajet');
@@ -20,6 +21,7 @@ function Listetrajet({ navigation }) {
 
   const fetchTrips = async () => {
     try {
+      setLoading(true);
       const tripsRef = collection(FIREBASE_DB, 'trajet');
       const q = query(tripsRef, where('user_id', '==', user.uid));
       const querySnapshot = await getDocs(q);
@@ -50,6 +52,8 @@ function Listetrajet({ navigation }) {
       setTrips(tripsList);
     } catch (e) {
       console.error("Error fetching trips: ", e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,7 +61,7 @@ function Listetrajet({ navigation }) {
     fetchTrips();
   }, [user]);
 
-  const renderItem = ({ item }) => (
+  const renderItem = useCallback(({ item }) => (
     <View style={[styles.item, { flexDirection: "column", alignItems: "center" }]}>
       <Text style={{ fontWeight: "bold" }}>Le trajet :</Text>
       <View style={styles.item2}>
@@ -69,18 +73,27 @@ function Listetrajet({ navigation }) {
           <Text style={{ fontWeight: "600" }}>Destination:</Text>
           <Text>{item.destination}</Text>
         </View>
-        
         <View style={styles.cells}>
           <Text style={{ fontWeight: "600" }}>Date :</Text>
           <Text>{item.dateheure}</Text>
         </View>
       </View>
     </View>
-  );
+  ), []);
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   const reload = () => {
-    rotateIcon();
-    fetchTrips();
+    if (!rotating) {
+      rotateIcon();
+      fetchTrips();
+    }
   };
 
   const rotateIcon = () => {
@@ -107,7 +120,7 @@ function Listetrajet({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={{ flex: 0.1, backgroundColor: 'rgba(255,255,255,0.9)', elevation: 5 }}>
+      <View style={styles.headerContainer}>
         <View style={styles.Header}>
           <TouchableOpacity style={styles.backbutton} onPress={() => navigation.navigate('page1')}>
             <AntDesign name="back" size={40} color={'black'} />
@@ -144,6 +157,11 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerContainer: {
+    flex: 0.1,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    elevation: 5,
   },
   Header: {
     flex: 1,
@@ -206,8 +224,12 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 15,
     width: "80%",
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 });
 
 export default Listetrajet;
-

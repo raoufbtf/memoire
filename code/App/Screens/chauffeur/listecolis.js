@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList, Button } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '../../UserContext';
@@ -15,9 +15,9 @@ function Listenvoi({ navigation }) {
     const [hiddenLocations, setHiddenLocations] = useState(new Set());
     const [rotating, setRotating] = useState(false);
     const rotationValue = useRef(new Animated.Value(0)).current;
+    const [loading, setLoading] = useState(true); // Add loading state
 
     useEffect(() => {
-        console.log('User info:', user); // Debug: Log user info
         fetchLocations();
         loadHiddenLocations(); // Check if locations are still hidden
     }, []);
@@ -84,7 +84,6 @@ function Listenvoi({ navigation }) {
                 });
             });
 
-            console.log('Fetched trajets:', trajetsList); // Debug statement
             return trajetsList;
         } catch (error) {
             console.error('Error fetching trajets:', error);
@@ -123,7 +122,6 @@ function Listenvoi({ navigation }) {
                 }
             });
 
-            console.log('Fetched locations for trajet:', locationsList); // Debug statement
             return locationsList;
         } catch (error) {
             console.error('Error fetching locations:', error);
@@ -132,6 +130,7 @@ function Listenvoi({ navigation }) {
 
     const fetchLocations = async () => {
         try {
+            setLoading(true); // Start loading
             const trajetsList = await fetchTrajets();
             const allLocations = [];
 
@@ -140,10 +139,11 @@ function Listenvoi({ navigation }) {
                 allLocations.push(...locationsList);
             }
 
-            console.log('All fetched locations:', allLocations); // Debug statement
             setLocations(allLocations);
+            setLoading(false); // Stop loading
         } catch (error) {
             console.error('Error fetching all locations:', error);
+            setLoading(false); // Stop loading on error
         }
     };
 
@@ -167,12 +167,10 @@ function Listenvoi({ navigation }) {
                 chauffeur_id: user.uid,
                 ...location,
             });
-            console.log('Location accepted:', location);
 
             // Now delete from locations collection
             const locationDoc = doc(FIREBASE_DB, 'locations', location.id);
             await deleteDoc(locationDoc);
-            console.log('Location deleted:', location.id);
 
             // Update state to reflect deletion
             setLocations((prevLocations) => prevLocations.filter((loc) => loc.id !== location.id));
@@ -212,31 +210,29 @@ function Listenvoi({ navigation }) {
         <View style={[styles.item, { flexDirection: "column", alignItems: "center" }]}>
             <Text style={{ fontWeight: "bold" }}>Location:</Text>
             <View style={styles.item2}>
-            <TouchableOpacity style={styles.cells} 
-        onPress={() => navigation.navigate("Map", {
-          latitude: item.latitude_eme,
-          longitude: item.longitude_eme
-        })}>
+                <TouchableOpacity style={styles.cells} onPress={() => navigation.navigate("Map", {
+                    latitude: item.latitude_eme,
+                    longitude: item.longitude_eme
+                })}>
                     <Text style={{ fontWeight: "600" }}>Emetteur :</Text>
                     <Text>{addressMap[item.id]?.depart || 'Loading...'}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cells} 
-        onPress={() => navigation.navigate("Map", {
-          latitude: item.latitude_des,
-          longitude: item.longitude_des
-        })}>
+                <TouchableOpacity style={styles.cells} onPress={() => navigation.navigate("Map", {
+                    latitude: item.latitude_des,
+                    longitude: item.longitude_des
+                })}>
                     <Text style={{ fontWeight: "600" }}>Receiver:</Text>
                     <Text>{addressMap[item.id]?.destination || 'Loading...'}</Text>
                 </TouchableOpacity>
                 <View style={styles.cells}>
                     <TouchableOpacity style={styles.button} onPress={() => handleAcceptLocation(item)} >
-                        <Text  style={styles.buttonText}>Accept</Text>
+                        <Text style={styles.buttonText}>Accept</Text>
                     </TouchableOpacity>
                 </View>
             </View>
         </View>
     );
-   
+
     return (
         <View style={styles.container}>
             <View style={{ flex: 0.1, backgroundColor: 'rgba(255,255,255,0.9)', elevation: 5 }}>
@@ -248,9 +244,7 @@ function Listenvoi({ navigation }) {
                         <Text style={styles.text}>Liste des locations disponibles :</Text>
                     </View>
                     <View>
-                        <TouchableOpacity
-                            style={[styles.backbutton, { marginLeft: 0, marginRight: 5 }]}
-                            onPress={reload}>
+                        <TouchableOpacity style={[styles.backbutton, { marginLeft: 0, marginRight: 5 }]} onPress={reload}>
                             <Animated.View style={{ transform: [{ rotate: rotating ? rotateAnimation : '0deg' }] }}>
                                 <Ionicons name="reload-circle-outline" size={50} color={'black'} />
                             </Animated.View>
@@ -259,11 +253,15 @@ function Listenvoi({ navigation }) {
                 </View>
             </View>
             <View style={styles.liste}>
-                <FlatList
-                    data={locations.filter(location => !hiddenLocations.has(location.id))}
-                    renderItem={renderItem}
-                    keyExtractor={item => item.id}
-                />
+                {loading ? ( // Display loading spinner when loading is true
+                    <ActivityIndicator size="large" color="#0000ff" />
+                ) : (
+                    <FlatList
+                        data={locations.filter(location => !hiddenLocations.has(location.id))}
+                        renderItem={renderItem}
+                        keyExtractor={item => item.id}
+                    />
+                )}
             </View>
         </View>
     );
@@ -313,22 +311,22 @@ const styles = StyleSheet.create({
         alignSelf: "center",
         justifyContent: "space-between",
         padding: 5
-      },
-      item2: {
+    },
+    item2: {
         alignItems: 'center',
         width: "95%",
         flexDirection: "row",
         justifyContent: 'space-between',
-      },
-      cells: {
+    },
+    cells: {
         justifyContent: 'space-between',
         alignItems: 'center',
         borderColor: 'black',
         backgroundColor: 'rgba(255,255,255,0.5)',
         borderWidth: 1,
         borderRadius: 5,
-      },
-      button: {
+    },
+    button: {
         borderRadius: 5,
         backgroundColor: "#B89F92",
         height: 50,

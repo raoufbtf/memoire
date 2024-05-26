@@ -1,113 +1,115 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FIREBASE_DB } from '../../FireBaseConfig';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useUser } from '../../UserContext';
+import ButtonM from '../../Components/button';
+import getCurrentAddress from '../../adresstext';
 
 function Listenvoi({ navigation }) {
     const [cells, setCells] = useState([]);
     const { user } = useUser();
     const rotationValue = useRef(new Animated.Value(0)).current;
     const [rotating, setRotating] = useState(false);
- 
-    const addToCells = (newItem) => {
-        setCells((prevCells) => {
-            const lastId = prevCells.length > 0 ? prevCells[prevCells.length - 1].id : 0;
-            const newItemWithId = { ...newItem, id: lastId + 1 };
-            return [...prevCells, newItemWithId];
-        });
+    const [loading, setLoading] = useState(true);
+
+    const fetchCells = async () => {
+        try {
+            const userRef = doc(FIREBASE_DB, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+
+            if (!userDoc.exists()) {
+                console.log("No such user document!");
+                return;
+            }
+
+            const userData = userDoc.data();
+            const cellsRef = collection(FIREBASE_DB, 'locations');
+            const q = query(cellsRef, where('user_id', '==', user.uid));
+            const querySnapshot = await getDocs(q);
+
+            const cellsList = await Promise.all(querySnapshot.docs.map(async (doc) => {
+                const cellData = doc.data();
+                const depart = await getCurrentAddress(cellData.latitude_eme, cellData.longitude_eme);
+                const destination = await getCurrentAddress(cellData.latitude_des, cellData.longitude_des);
+                return {
+                    id: doc.id,
+                    depart,
+                    destination,
+                    taille: cellData.taille,
+                    etat: 'En Attente',
+                    num: userData.num,
+                };
+            }));
+
+            setCells(cellsList);
+            const cellsRefa = collection(FIREBASE_DB, 'acceptedLocations');
+            const d = query(cellsRefa, where('user_id', '==', user.uid));
+            const querySnapshots = await getDocs(d);
+
+            const cellsLists = await Promise.all(querySnapshots.docs.map(async (doc) => {
+                const cellData = doc.data();
+                const depart = await getCurrentAddress(cellData.latitude_eme, cellData.longitude_eme);
+                const destination = await getCurrentAddress(cellData.latitude_des, cellData.longitude_des);
+                return {
+                    id: doc.id,
+                    depart,
+                    destination,
+                    taille: cellData.taille,
+                    etat: 'En cours ',
+                    num: userData.num,
+                };
+            }));
+
+            setCells(cellsLists);
+        } catch (e) {
+            console.error("Error fetching cells: ", e);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const userRef = doc(FIREBASE_DB, 'users', user.uid);
-                const userDoc = await getDoc(userRef);
-                
-                if (!userDoc.exists()) {
-                    console.log("No such user document!");
-                    return;
-                }
-
-                const userData = userDoc.data();
-
-                const locationsRef = collection(FIREBASE_DB, 'locations');
-                const q = query(locationsRef, where('user_id', '==', user.uid));
-                const querySnapshot = await getDocs(q);
-
-                querySnapshot.forEach((doc) => {
-                    const locationData = doc.data();
-
-                    addToCells({
-                        Lemeteur: locationData.latitude_eme,
-                        Ldistinateur: locationData.latitude_des,
-                        lemeteur: locationData.longitude_eme,
-                        ldistinateur: locationData.longitude_des,
-                        etat: 'En Attente', 
-                        taille: locationData.taille,
-                        num: userData.num,
-                        ...locationData,
-                    });
-                });
-                const locationsRefa = collection(FIREBASE_DB, 'acceptedLocations');
-                const d = query(locationsRefa, where('user_id', '==', user.uid));
-                const querySnapshots = await getDocs(d);
-
-                querySnapshots.forEach((doc) => {
-                    const locationData = doc.data();
-
-                    addToCells({
-                        Lemeteur: locationData.latitude_eme,
-                        Ldistinateur: locationData.latitude_des,
-                        lemeteur: locationData.longitude_eme,
-                        ldistinateur: locationData.longitude_des,
-                        etat: 'En Cours', 
-                        taille: locationData.taille,
-                        num: userData.num,
-                        ...locationData,
-                    });
-                });
-                
-            } catch (e) {
-                console.error("Error fetching documents: ", e);
-            }
-
-            
-        };
-
-        fetchData();
+        fetchCells();
     }, [user]);
 
     const renderItem = ({ item }) => (
         <View style={[styles.item, { flexDirection: "column", alignItems: "center" }]}>
-            <Text style={{fontWeight:"bold"}}>le coli : </Text>
-            <View style={[styles.item2]}>
+            <Text style={{ fontWeight: "bold" }}>Le coli :</Text>
+            <View style={styles.item2}>
                 <View style={styles.cells}>
-                    <Text style={{fontWeight:"600"}}>depart:</Text>
-                    <Text>{item.lemeteur}</Text>
-                    <Text>{item.id}</Text>
-                    <Text style={{fontWeight:"bold"}}>destination:</Text>
-                    <Text>{item.ldistinateur}</Text>
+                    <Text style={{ fontWeight: "600" }}>Départ:</Text>
+                    <Text>{item.depart}</Text>
+                    <Text style={{ fontWeight: "600" }}>Destination:</Text>
+                    <Text>{item.destination}</Text>
                 </View>
                 <View style={styles.cells}>
-                    <Text style={{fontWeight:"bold"}}>Taille:</Text>
+                    <Text style={{ fontWeight: "600" }}>Taille:</Text>
                     <Text>{item.taille}</Text>
-                    <Text style={{fontWeight:"bold"}}>Etat:</Text>
+                    <Text style={{ fontWeight: "600" }}>État:</Text>
                     <Text>{item.etat}</Text>
                 </View>
                 <View style={styles.cells}>
-                    <Text style={{fontWeight:"bold"}}>Numero:</Text>
+                    <Text style={{ fontWeight: "600" }}>Numéro:</Text>
                     <Text>{item.num}</Text>
                 </View>
             </View>
         </View>
     );
 
+    if (loading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
+
     const reload = () => {
         rotateIcon();
-        console.log('Reloading data...');
+        fetchCells();
     };
 
     const rotateIcon = () => {
@@ -150,6 +152,9 @@ function Listenvoi({ navigation }) {
                         </TouchableOpacity>
                     </View>
                 </View>
+            </View>
+            <View style={styles.buttoncont}>
+                <ButtonM style={styles.button} fnc={reload}> Ajouter un coli </ButtonM>
             </View>
             <View style={styles.liste}>
                 <FlatList
@@ -208,7 +213,6 @@ const styles = StyleSheet.create({
         padding: 5
     },
     item2: {
-        padding: 10,
         alignItems: 'center',
         width: "95%",
         flexDirection: "row",
@@ -222,6 +226,21 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 5,
         padding: 5
+    },
+    buttoncont: {
+        width: "100%",
+        flex: 0.1,
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    button: {
+        borderRadius: 15,
+        width: "80%",
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

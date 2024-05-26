@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList, Button } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Animated, FlatList, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '../../UserContext';
@@ -12,7 +12,8 @@ function Listeacc({ navigation }) {
     const [rotating, setRotating] = useState(false);
     const rotationValue = useRef(new Animated.Value(0)).current;
     const [locations, setLocations] = useState([]);
-    const [addressMap, setAddressMap] = useState({});
+    const [loading, setLoading] = useState(true);
+    const addressMap = useRef({});
 
     useEffect(() => {
         fetchData();
@@ -25,6 +26,7 @@ function Listeacc({ navigation }) {
 
             if (!userDoc.exists()) {
                 console.log("No such user document!");
+                setLoading(false);
                 return;
             }
 
@@ -34,7 +36,7 @@ function Listeacc({ navigation }) {
             const querySnapshots = await getDocs(d);
             const fetchedLocations = [];
 
-            querySnapshots.forEach((doc) => {
+            for (const doc of querySnapshots.docs) {
                 const locationData = doc.data();
                 fetchedLocations.push({
                     id: doc.id,
@@ -42,33 +44,26 @@ function Listeacc({ navigation }) {
                     Ldistinateur: locationData.latitude_des,
                     lemeteur: locationData.longitude_eme,
                     ldistinateur: locationData.longitude_des,
-                    etat: 'En Cours', 
+                    etat: 'En Cours',
                     taille: locationData.taille,
                     num: userData.num,
                     ...locationData,
                 });
 
-                // Fetch the addresses asynchronously
-                getCurrentAddress(locationData.latitude_eme, locationData.longitude_eme)
-                    .then((address) => {
-                        setAddressMap((prev) => ({
-                            ...prev,
-                            [doc.id]: { ...prev[doc.id], depart: address },
-                        }));
-                    });
-
-                getCurrentAddress(locationData.latitude_des, locationData.longitude_des)
-                    .then((address) => {
-                        setAddressMap((prev) => ({
-                            ...prev,
-                            [doc.id]: { ...prev[doc.id], destination: address },
-                        }));
-                    });
-            });
+                // Fetch addresses and cache them
+                if (!addressMap.current[`${locationData.latitude_eme},${locationData.longitude_eme}`]) {
+                    addressMap.current[`${locationData.latitude_eme},${locationData.longitude_eme}`] = await getCurrentAddress(locationData.latitude_eme, locationData.longitude_eme);
+                }
+                if (!addressMap.current[`${locationData.latitude_des},${locationData.longitude_des}`]) {
+                    addressMap.current[`${locationData.latitude_des},${locationData.longitude_des}`] = await getCurrentAddress(locationData.latitude_des, locationData.longitude_des);
+                }
+            }
 
             setLocations(fetchedLocations);
         } catch (e) {
             console.error("Error fetching documents: ", e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -99,7 +94,7 @@ function Listeacc({ navigation }) {
         outputRange: ['0deg', '360deg'],
     });
 
-    const renderItem = ({ item }) => (
+    const renderItem = useCallback(({ item }) => (
         <View style={[styles.item, { flexDirection: "column", alignItems: "center" }]}>
             <Text style={{ fontWeight: "bold" }}>Location:</Text>
             <View style={styles.item2}>
@@ -109,7 +104,7 @@ function Listeacc({ navigation }) {
                         longitude: item.longitude_eme
                     })}>
                     <Text style={{ fontWeight: "600" }}>Emetteur :</Text>
-                    <Text>{addressMap[item.id]?.depart || 'Loading...'}</Text>
+                    <Text>{addressMap.current[`${item.latitude_eme},${item.longitude_eme}`]}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.cells} 
                     onPress={() => navigation.navigate("Map", {
@@ -117,7 +112,7 @@ function Listeacc({ navigation }) {
                         longitude: item.longitude_des
                     })}>
                     <Text style={{ fontWeight: "600" }}>Receiver:</Text>
-                    <Text>{addressMap[item.id]?.destination || 'Loading...'}</Text>
+                    <Text>{addressMap.current[`${item.latitude_des},${item.longitude_des}`]}</Text>
                 </TouchableOpacity>
                 <View style={styles.cells}>
                     <Text style={{ fontWeight: "600" }}>Numero:</Text>
@@ -125,7 +120,15 @@ function Listeacc({ navigation }) {
                 </View>
             </View>
         </View>
-    );
+    ), []);
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
