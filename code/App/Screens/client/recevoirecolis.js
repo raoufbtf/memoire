@@ -162,15 +162,12 @@ function Recevoire({ navigation }) {
           </View>
         </View>
       </View>
-      <View style={styles.buttoncont}>
-        <ButtonM style={styles.button} fnc={reload}>Ajouter un coli</ButtonM>
-      </View>
       <View style={styles.liste}>
         <FlatList
           data={cells}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text>Aucun colis à recevoir</Text>} // Added a placeholder for empty list
+          ListEmptyComponent={<Text >Aucun colis à recevoir</Text>} // Added a placeholder for empty list
         />
       </View>
     </View>
@@ -196,6 +193,7 @@ const styles = StyleSheet.create({
     flex: 0.9,
     width: '100%',
     alignSelf: 'center',
+    alignItems: 'center',
     alignContent: 'center',
   },
   text: {

@@ -62,8 +62,8 @@ function Profil_client({ navigation }) {
           </TouchableOpacity>}
         {/* ici on met l'image stock dans la bdd */}
         <Text style={{marginTop:20,fontSize:30,fontWeight:"500"}}> {userData && userData.name ? userData.name : "Default Name"} {userData && userData.familyName ? userData.familyName : "Default family"}</Text>
-        <Textedit label="l'adresse" button={true}> {userData && userData.email ? userData.email : "Default email"}</Textedit>
-        <Textedit label="Numero de telephone" button={true}> {userData && userData.num ? userData.num : "Default num"}</Textedit>
+        <Textedit label="l'adresse" > {userData && userData.email ? userData.email : "Default email"}</Textedit>
+        <Textedit label="Numero de telephone" > {userData && userData.num ? userData.num : "Default num"}</Textedit>
         <Textedit label="le idantifiant de reception" > {userData && userData.idclient ? userData.idclient : "Default num"}</Textedit>
         
       </View>
