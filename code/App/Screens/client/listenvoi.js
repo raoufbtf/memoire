@@ -26,7 +26,7 @@ function Listenvoi({ navigation }) {
             }
 
             const userData = userDoc.data();
-            const cellsRef = collection(FIREBASE_DB, 'locations');
+            const cellsRef = collection(FIREBASE_DB, 'Colis');
             const q = query(cellsRef, where('user_id', '==', user.uid));
             const querySnapshot = await getDocs(q);
 
@@ -44,7 +44,7 @@ function Listenvoi({ navigation }) {
                 };
             }));
 
-            const cellsRefa = collection(FIREBASE_DB, 'acceptedLocations');
+            const cellsRefa = collection(FIREBASE_DB, 'acceptedColis');
             const d = query(cellsRefa, where('user_id', '==', user.uid));
             const querySnapshots = await getDocs(d);
 
@@ -64,8 +64,28 @@ function Listenvoi({ navigation }) {
                     num: chauffeur.num,
                 };
             }));
+            const cellsRefas = collection(FIREBASE_DB, 'terminéColis');
+            const ds = query(cellsRefas, where('user_id', '==', user.uid));
+            const querySnapshotss = await getDocs(ds);
 
-            setCells([...acceptedCells, ...pendingCells]);
+            const acceptedCellss = await Promise.all(querySnapshotss.docs.map(async (cellDoc) => {
+                const cellData = cellDoc.data();
+                const chauffeurRef = firestoreDoc(FIREBASE_DB, 'users', cellData.chauffeur_id);
+                const chauffeurDoc = await getDoc(chauffeurRef);
+                const chauffeur = chauffeurDoc.data();
+                const depart = await getCurrentAddress(cellData.latitude_eme, cellData.longitude_eme);
+                const destination = await getCurrentAddress(cellData.latitude_des, cellData.longitude_des);
+                return {
+                    id: cellDoc.id,
+                    depart,
+                    destination,
+                    taille: cellData.taille,
+                    etat: 'Termine',
+                    num: chauffeur.num,
+                };
+            }));
+
+            setCells([...acceptedCells, ...pendingCells, ...acceptedCellss]);
         } catch (e) {
             console.error("Error fetching cells: ", e);
         } finally {

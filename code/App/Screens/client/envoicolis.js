@@ -11,6 +11,8 @@ import { useUser } from '../../UserContext';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import getCurrentAddress from '../../adresstext';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+
 
 import MapViewDirections from 'react-native-maps-directions';
 const GOOGLE_MAPS_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';  // Replace with your API key
@@ -90,8 +92,18 @@ function Envoi() {
   const Recheche = async () => {
     if (emitterPosition && receiverPosition) {
       try {
+        
+          // Verify the idu in the users collection
+          const q = query(collection(FIREBASE_DB, "users"), where("idclient", "==", idu));
+          const querySnapshot = await getDocs(q);
+    
+          if (querySnapshot.empty) {
+            Alert.alert('Identifiant invalide', 'Le ID de destinataire fourni n\'existe pas.');
+            return;
+          }
+
         const locationId = uuidv4();
-        const locationRef = doc(FIREBASE_DB, 'locations', locationId);
+        const locationRef = doc(FIREBASE_DB, 'Colis', locationId);
         const locationData = {
           taille: selectedOption,
           latitude_eme: emitterPosition.latitude,
@@ -99,6 +111,7 @@ function Envoi() {
           latitude_des: receiverPosition.latitude,
           longitude_des: receiverPosition.longitude,
           user_id: user.uid,
+          idclient: idu,
           timestamp_des: Date.now()
         };
 

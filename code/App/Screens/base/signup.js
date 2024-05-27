@@ -7,6 +7,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FireBaseConfig";
 import Container from '../../Components/container';
 import ButtonM from '../../Components/button';
+import { generateSecureUserId } from '../../utils';
 
 const SignUp = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -30,13 +31,14 @@ const SignUp = ({ navigation }) => {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
+      const idclient = generateSecureUserId(8);
       const userRef = doc(FIREBASE_DB, "users", userCredential.user.uid);
       await setDoc(userRef, {
         name: name,
         familyName: familyName,
         email: email,
         num: number,
+        idclient: idclient,
         type: type
       });
 

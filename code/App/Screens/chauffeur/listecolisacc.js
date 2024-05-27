@@ -31,13 +31,32 @@ function Listeacc({ navigation }) {
             }
 
             const userData = userDoc.data();
-            const locationsRefa = collection(FIREBASE_DB, 'acceptedLocations');
+
+            const locationsRefa = collection(FIREBASE_DB, 'acceptedColis');
             const d = query(locationsRefa, where('chauffeur_id', '==', user.uid));
             const querySnapshots = await getDocs(d);
             const fetchedLocations = [];
 
             for (const doc of querySnapshots.docs) {
                 const locationData = doc.data();
+                
+                // Query to get client details based on idclient
+                const y = query(collection(FIREBASE_DB, "users"), where("idclient", "==", locationData.idclient));
+                const querySnapshota = await getDocs(y);
+                
+                let clientPhoneNumber = '';
+                let clientname='';
+                let clientfamilyname='';
+
+                if (!querySnapshota.empty) {
+                    querySnapshota.forEach(clientDoc => {
+                        const clientData = clientDoc.data();
+                        clientPhoneNumber = clientData.num;
+                        clientfamilyname= clientData.familyName; 
+                        clientname= clientData.name;
+                    });
+                }
+
                 fetchedLocations.push({
                     id: doc.id,
                     Lemeteur: locationData.latitude_eme,
@@ -46,7 +65,9 @@ function Listeacc({ navigation }) {
                     ldistinateur: locationData.longitude_des,
                     etat: 'En Cours',
                     taille: locationData.taille,
-                    num: userData.num,
+                    num: clientPhoneNumber, 
+                    name: clientname,
+                    familyname: clientfamilyname,
                     ...locationData,
                 });
 
@@ -98,26 +119,34 @@ function Listeacc({ navigation }) {
         <View style={[styles.item, { flexDirection: "column", alignItems: "center" }]}>
             <Text style={{ fontWeight: "bold" }}>Location:</Text>
             <View style={styles.item2}>
-                <TouchableOpacity style={styles.cells} 
-                    onPress={() => navigation.navigate("Map", {
-                        latitude: item.latitude_eme,
-                        longitude: item.longitude_eme
-                    })}>
-                    <Text style={{ fontWeight: "600" }}>Emetteur :</Text>
-                    <Text>{addressMap.current[`${item.latitude_eme},${item.longitude_eme}`]}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.cells} 
-                    onPress={() => navigation.navigate("Map", {
-                        latitude: item.latitude_des,
-                        longitude: item.longitude_des
-                    })}>
-                    <Text style={{ fontWeight: "600" }}>Receiver:</Text>
-                    <Text>{addressMap.current[`${item.latitude_des},${item.longitude_des}`]}</Text>
-                </TouchableOpacity>
+                <View style={styles.cells}>
+                    <TouchableOpacity style={styles.cells} 
+                        onPress={() => navigation.navigate("Map", {
+                            latitude: item.latitude_eme,
+                            longitude: item.longitude_eme
+                        })}>
+                        <Text style={{ fontWeight: "600" }}>Emetteur :</Text>
+                        <Text>{addressMap.current[`${item.latitude_eme},${item.longitude_eme}`]}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.cells} 
+                        onPress={() => navigation.navigate("Map", {
+                            latitude: item.latitude_des,
+                            longitude: item.longitude_des
+                        })}>
+                        <Text style={{ fontWeight: "600" }}>Receiver:</Text>
+                        <Text>{addressMap.current[`${item.latitude_des},${item.longitude_des}`]}</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.cells}>
+                    <Text style={{ fontWeight: "600" }}>Prenom:</Text>
+                    <Text>{item.name}</Text>
+                    <Text style={{ fontWeight: "600" }}>Nom:</Text>
+                    <Text>{item.familyname}</Text>
+                </View>
                 <View style={styles.cells}>
                     <Text style={{ fontWeight: "600" }}>Numero:</Text>
                     <Text>{item.num}</Text>
-                    <TouchableOpacity style={styles.button} on onPress={()=>{navigation.navigate("Terminer")}}>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Terminer", { item })}>
                         <Text style={styles.buttonText}>Terminer</Text>
                     </TouchableOpacity>
                 </View>

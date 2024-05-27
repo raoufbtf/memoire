@@ -8,6 +8,12 @@ import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'fireb
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getCurrentAddress from '../../adresstext';
 
+const generateRandomNumber = () => {
+    const min = 100000; // Minimum 6-digit number
+    const max = 999999; // Maximum 6-digit number
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
 function Listenvoi({ navigation }) {
     const { user } = useUser();
     const [locations, setLocations] = useState([]);
@@ -92,7 +98,7 @@ function Listenvoi({ navigation }) {
 
     const fetchLocationsForTrajet = async (trajet) => {
         try {
-            const locationsRef = collection(FIREBASE_DB, 'locations');
+            const locationsRef = collection(FIREBASE_DB, 'Colis');
 
             // Adjust your queries to avoid multiple range queries on the same field set
             const q = query(
@@ -147,29 +153,19 @@ function Listenvoi({ navigation }) {
         }
     };
 
-    const handleRefuseLocation = (id) => {
-        setHiddenLocations((prevHiddenLocations) => new Set(prevHiddenLocations).add(id));
-        saveHiddenLocations(hiddenLocations); // Save hidden locations when one is refused
-        setTimeout(() => {
-            setHiddenLocations((prevHiddenLocations) => {
-                const newHiddenLocations = new Set(prevHiddenLocations);
-                newHiddenLocations.delete(id);
-                saveHiddenLocations(newHiddenLocations); // Save hidden locations after timeout
-                return newHiddenLocations;
-            });
-        }, 15 * 60 * 1000); // 15 minutes
-    };
+    
 
     const handleAcceptLocation = async (location) => {
         try {
-            const acceptedLocationsRef = collection(FIREBASE_DB, 'acceptedLocations');
+            const acceptedLocationsRef = collection(FIREBASE_DB, 'acceptedColis');
             await addDoc(acceptedLocationsRef, {
                 chauffeur_id: user.uid,
+                code_confirm: '' + generateRandomNumber(),
                 ...location,
             });
 
             // Now delete from locations collection
-            const locationDoc = doc(FIREBASE_DB, 'locations', location.id);
+            const locationDoc = doc(FIREBASE_DB, 'Colis', location.id);
             await deleteDoc(locationDoc);
 
             // Update state to reflect deletion
