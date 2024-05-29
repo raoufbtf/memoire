@@ -172,9 +172,7 @@ function Listenvoi({ navigation }) {
                     </View>
                 </View>
             </View>
-            <View style={styles.buttoncont}>
-                <ButtonM style={styles.button} fnc={reload}> Ajouter un coli </ButtonM>
-            </View>
+            
             <View style={styles.liste}>
                 <FlatList
                     data={cells}

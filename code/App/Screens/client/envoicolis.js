@@ -15,7 +15,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 
 
 import MapViewDirections from 'react-native-maps-directions';
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';  // Replace with your API key
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCdIq65pwy2KoNBa42AhnecTG3wZN5j4EQ';  
 
 function Envoi() {
   const [selectedOption, setSelectedOption] = useState(" ");
@@ -93,7 +93,6 @@ function Envoi() {
     if (emitterPosition && receiverPosition) {
       try {
         
-          // Verify the idu in the users collection
           const q = query(collection(FIREBASE_DB, "users"), where("idclient", "==", idu));
           const querySnapshot = await getDocs(q);
     

@@ -36,8 +36,8 @@ function Profil_client({ navigation }) {
   const handleLogout =  async () => {
     try {
       await signOut(FIREBASE_AUTH);
-      setUser(null); // Clear the user context or state
-      navigation.navigate('Login'); // Redirect to the login screen or any other screen
+      setUser(null); 
+      navigation.navigate('Login'); 
     } catch (error) {
       console.log('Error logging out:', error);
     }

@@ -40,7 +40,7 @@ function Listeacc({ navigation }) {
             for (const doc of querySnapshots.docs) {
                 const locationData = doc.data();
                 
-                // Query to get client details based on idclient
+                
                 const y = query(collection(FIREBASE_DB, "users"), where("idclient", "==", locationData.idclient));
                 const querySnapshota = await getDocs(y);
                 
@@ -71,7 +71,7 @@ function Listeacc({ navigation }) {
                     ...locationData,
                 });
 
-                // Fetch addresses and cache them
+               
                 if (!addressMap.current[`${locationData.latitude_eme},${locationData.longitude_eme}`]) {
                     addressMap.current[`${locationData.latitude_eme},${locationData.longitude_eme}`] = await getCurrentAddress(locationData.latitude_eme, locationData.longitude_eme);
                 }

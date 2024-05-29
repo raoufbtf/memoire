@@ -67,7 +67,7 @@ function Recevoire({ navigation }) {
 
           if (!chauffeurDoc.exists()) {
             console.log("No such chauffeur document!");
-            return null;  // Skip this document
+            return null;  
           }
 
           const chauffeurData = chauffeurDoc.data();
@@ -82,7 +82,6 @@ function Recevoire({ navigation }) {
         })
       );
 
-      // Filter out any null values (in case some chauffeur documents didn't exist)
       const validCellsData = cellsData.filter(item => item !== null);
 
       console.log('Cells data:', validCellsData);
@@ -124,7 +123,7 @@ function Recevoire({ navigation }) {
         duration: 1000,
         useNativeDriver: true,
       }).start(() => {
-        rotationValue.setValue(0); // Reset rotation to 0 after completing the animation
+        rotationValue.setValue(0); 
         setRotating(false);
       });
     }
@@ -167,7 +166,7 @@ function Recevoire({ navigation }) {
           data={cells}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text >Aucun colis à recevoir</Text>} // Added a placeholder for empty list
+          ListEmptyComponent={<Text >Aucun colis à recevoir</Text>} 
         />
       </View>
     </View>

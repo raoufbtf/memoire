@@ -9,8 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import getCurrentAddress from '../../adresstext';
 
 const generateRandomNumber = () => {
-    const min = 100000; // Minimum 6-digit number
-    const max = 999999; // Maximum 6-digit number
+    const min = 100000; 
+    const max = 999999; 
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
@@ -21,11 +21,11 @@ function Listenvoi({ navigation }) {
     const [hiddenLocations, setHiddenLocations] = useState(new Set());
     const [rotating, setRotating] = useState(false);
     const rotationValue = useRef(new Animated.Value(0)).current;
-    const [loading, setLoading] = useState(true); // Add loading state
+    const [loading, setLoading] = useState(true); 
 
     useEffect(() => {
         fetchLocations();
-        loadHiddenLocations(); // Check if locations are still hidden
+        loadHiddenLocations(); 
     }, []);
 
     useEffect(() => {
@@ -78,7 +78,7 @@ function Listenvoi({ navigation }) {
     const fetchTrajets = async () => {
         try {
             const trajetsRef = collection(FIREBASE_DB, 'trajet');
-            const q = query(trajetsRef, where('user_id', '==', user.uid)); // Filter by user_id
+            const q = query(trajetsRef, where('user_id', '==', user.uid)); 
             const querySnapshot = await getDocs(q);
             const trajetsList = [];
 
@@ -100,7 +100,7 @@ function Listenvoi({ navigation }) {
         try {
             const locationsRef = collection(FIREBASE_DB, 'Colis');
 
-            // Adjust your queries to avoid multiple range queries on the same field set
+           
             const q = query(
                 locationsRef,
                 where('latitude_eme', '>=', trajet.latitude_eme - 0.045),
@@ -112,14 +112,13 @@ function Listenvoi({ navigation }) {
 
             querySnapshot.forEach((doc) => {
                 const locationData = doc.data();
-                // Further filtering in memory
                 if (
                     locationData.longitude_eme >= trajet.longitude_eme - 0.045 &&
                     locationData.longitude_eme <= trajet.longitude_eme + 0.045 &&
                     locationData.latitude_des >= trajet.latitude_des - 0.045 &&
                     locationData.latitude_des <= trajet.latitude_des + 0.045 &&
                     locationData.longitude_des >= trajet.longitude_des - 0.045 &&
-                    locationData.longitude_des <= trajet.longitude_des + 0.045 // Add condition to filter locations by chauffeur's UID
+                    locationData.longitude_des <= trajet.longitude_des + 0.045
                 ) {
                     locationsList.push({
                         id: doc.id,
@@ -136,7 +135,7 @@ function Listenvoi({ navigation }) {
 
     const fetchLocations = async () => {
         try {
-            setLoading(true); // Start loading
+            setLoading(true); 
             const trajetsList = await fetchTrajets();
             const allLocations = [];
 
@@ -146,10 +145,10 @@ function Listenvoi({ navigation }) {
             }
 
             setLocations(allLocations);
-            setLoading(false); // Stop loading
+            setLoading(false); 
         } catch (error) {
             console.error('Error fetching all locations:', error);
-            setLoading(false); // Stop loading on error
+            setLoading(false); 
         }
     };
 
@@ -164,11 +163,11 @@ function Listenvoi({ navigation }) {
                 ...location,
             });
 
-            // Now delete from locations collection
+           
             const locationDoc = doc(FIREBASE_DB, 'Colis', location.id);
             await deleteDoc(locationDoc);
 
-            // Update state to reflect deletion
+            
             setLocations((prevLocations) => prevLocations.filter((loc) => loc.id !== location.id));
         } catch (error) {
             console.error('Error accepting location:', error);

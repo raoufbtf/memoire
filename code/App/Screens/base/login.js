@@ -20,31 +20,31 @@ export default function Login({ navigation }) {
       if (response) {
         const user = response.user;
         setUser(user);
-
+  
         const userRef = doc(FIREBASE_DB, "users", user.uid);
         const docSnap = await getDoc(userRef);
         if (docSnap.exists()) {
-          setUserData(docSnap.data());
+          const data = docSnap.data();
+          setUserData(data);
+  
+          if (data.type === "user") {
+            navigation.navigate('Home2');
+          } else if (data.type === "chauffeur") {
+            navigation.navigate('Home3');
+          }
         } else {
           console.log("No such document!");
-        }
-
-        if (userData && userData.type == "user") {
-          navigation.navigate('Home2');
-        } 
-        else if (userData && userData.type == "chauffeur") {
-          navigation.navigate('Home3');
         }
       } else {
         console.log("Sign-in failed, but no error was thrown.");
       }
     } catch (error) {
-      
       Alert.alert('Erreur de connexion', "L'email ou le mot de passe est incorrect", [
         { text: 'OK' }
       ]);
     }
   };
+  
 
   return (
     <View style={styles.container}>

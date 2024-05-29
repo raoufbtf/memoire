@@ -9,7 +9,7 @@ import { FIREBASE_DB } from "../../FireBaseConfig";
 function Devenirchauf({ navigation }) {
   const [numPermis, setNumPermis] = useState('');
   const [tailleMax, setTailleMax] = useState('');
-  const [deja, setDeja] = useState(false); // This state is used to check if the user has already submitted the form
+  const [deja, setDeja] = useState(false); 
   const { user } = useUser();
 
   useEffect(() => {
@@ -20,7 +20,7 @@ function Devenirchauf({ navigation }) {
           const docSnap = await getDoc(userRef);
           if (docSnap.exists()) {
             const userData = docSnap.data();
-            setDeja(userData.deja || false); // Update deja state based on the value in the user's document
+            setDeja(userData.deja || false); 
           } else {
             console.log("No such document!");
           }
@@ -33,28 +33,25 @@ function Devenirchauf({ navigation }) {
     checkIfDejaSubmitted();
   }, [user]);
 
-  // Function to handle form submission
   const handleSubmit = async () => {
     try {
-      // Check if user already submitted request
       if (deja) {
         console.log("Vous avez déjà soumis une demande.");
         return;
       }
 
-      // Update Firestore with new chauffeur data
       const covoitureurRef = doc(FIREBASE_DB, "covoitureur", user.uid);
       await setDoc(covoitureurRef, {
-        numPermis: numPermis, // You need to replace this with the actual photo path or upload mechanism
+        numPermis: numPermis, 
         poidmax: tailleMax
       });
 
-      // Update the user's document to indicate that the form has been submitted
+      
       const userRef = doc(FIREBASE_DB, "users", user.uid);
-      await setDoc(userRef, { deja: true }, { merge: true });
+      await setDoc(userRef, { deja: true , type : "chauffeur"}, { merge: true });
 
       console.log("Demande de devenir chauffeur soumise avec succès.");
-      setDeja(true); // Update state to indicate request submitted
+      setDeja(true); 
     } catch (error) {
       console.error("Erreur lors de la soumission de la demande:", error.message);
     }

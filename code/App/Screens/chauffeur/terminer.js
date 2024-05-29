@@ -10,20 +10,19 @@ function Terminer() {
     const { user } = useUser();
     const navigation = useNavigation();
     const route = useRoute();
-    const { item } = route.params;  // Correctly destructuring the item from route params
+    const { item } = route.params;  
     const [code, setCode] = useState("");
 
     const handleConfirm = async () => {
         if (code === item.code_confirm) {
             try {
-                // Add to 'terminélocation' collection
                 const completedLocationsRef = collection(FIREBASE_DB, 'terminéColis');
                 await addDoc(completedLocationsRef, {
                     chauffeur_id: user.uid,
                     ...item,
                 });
 
-                // Find and delete the document from 'acceptedLocations' collection
+                
                 const locationDoc = collection(FIREBASE_DB, 'acceptedColis');
                 const d = query(locationDoc, where('id', '==', item.id));
                 const querySnapshots = await getDocs(d);
